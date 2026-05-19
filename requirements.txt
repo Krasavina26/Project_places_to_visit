@@ -1,0 +1,10 @@
+pandas
+numpy
+torch
+torchvision
+torchaudio
+transformers
+scikit-learn
+pymorphy3
+tqdm
+sentence-transformers
