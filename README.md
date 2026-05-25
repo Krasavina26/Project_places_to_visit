@@ -25,6 +25,8 @@
 
 ##  Архитектура проекта
 
+Ссылка на HF Spaces: [Krasavina/chatbot-for-places](https://huggingface.co/spaces/Krasavina/chatbot-for-places)
+
 ### Общая структура
 ...
 
