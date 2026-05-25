@@ -29,7 +29,7 @@ class AtmosphereDetector:
             min_tag_similarity: минимальное косинусное сходство для совпадения тегов
             use_gpu: использовать ли GPU
         """
-        print("🏠 Инициализация AtmosphereDetector...")
+        print(" Инициализация AtmosphereDetector...")
         
         self.semantic_weight = semantic_weight
         self.rating_weight = rating_weight
@@ -60,7 +60,7 @@ class AtmosphereDetector:
         # Кэш для эмбеддингов тегов мест
         self._place_embeddings_cache = {}
         
-        print(f"✅ AtmosphereDetector готов (семантический вес: {self.semantic_weight}, "
+        print(f" AtmosphereDetector готов (семантический вес: {self.semantic_weight}, "
               f"минимальное сходство: {self.min_tag_similarity})\n")
     
     # ==================== ИЗВЛЕЧЕНИЕ ТЕГОВ ИЗ ТЕКСТА (С OFFSET MAPPING) ====================
@@ -360,7 +360,7 @@ class AtmosphereDetector:
         
         if not query_tags:
             if verbose:
-                print(f"⚠️ Не удалось извлечь теги атмосферы из запроса")
+                print(f" Не удалось извлечь теги атмосферы из запроса")
                 print(f"   Возвращаем места, отсортированные по рейтингу...")
             
             # Возвращаем ВСЕ места, отсортированные по рейтингу
@@ -380,11 +380,11 @@ class AtmosphereDetector:
             return result_df
         
         if verbose:
-            print(f"📝 Извлечённые теги: {query_tags}")
+            print(f" Извлечённые теги: {query_tags}")
         
         # 2. Оцениваем все места
         if verbose:
-            print(f"📊 Оценка {len(places_df)} мест...")
+            print(f" Оценка {len(places_df)} мест...")
         
         scores = []
         for idx, row in places_df.iterrows():
@@ -405,7 +405,7 @@ class AtmosphereDetector:
         result_df = result_df.sort_values('final_score', ascending=False)
         
         if verbose:
-            print(f"\n📊 Результаты:")
+            print(f"\n Результаты:")
             print(f"   - Всего мест: {len(places_df)}")
             print(f"   - Извлечено тегов из запроса: {len(query_tags)}")
             print(f"   - Прошло фильтр (semantic >= {min_semantic_score}): {len(result_df)}")
@@ -435,18 +435,18 @@ def print_atmosphere_recommendations(
         recommendations_df = recommendations_df.head(top_n)
     
     if len(recommendations_df) == 0:
-        print("\n❌ Нет мест, соответствующих критериям")
+        print("\n Нет мест, соответствующих критериям")
         return
     
     print(f"\n{'='*100}")
-    print(f"🌟 РЕКОМЕНДАЦИИ ПО АТМОСФЕРЕ (ранжированы по семантическому сходству и рейтингу):")
+    print(f" РЕКОМЕНДАЦИИ ПО АТМОСФЕРЕ (ранжированы по семантическому сходству и рейтингу):")
     print(f"{'='*100}")
     
     # Выводим теги запроса, если они есть
     if 'query_tags' in recommendations_df.columns and len(recommendations_df) > 0:
         query_tags = recommendations_df.iloc[0].get('query_tags', '')
         if query_tags:
-            print(f"🔍 Теги запроса: {query_tags}")
+            print(f" Теги запроса: {query_tags}")
             print(f"{'─'*100}")
     
     for display_idx, (idx, row) in enumerate(recommendations_df.iterrows(), 1):
@@ -483,13 +483,13 @@ def print_atmosphere_recommendations(
         rating_score = row.get('rating_score', 0)
         
         print(f"\n{'─'*100}")
-        print(f"📍 {display_idx}. {title}")
-        print(f"   🆔 ID: {place_id} | 📂 Категория: {category}")
-        print(f"   ⭐ Рейтинг: {rating} (всего оценок: {int(review_count)})")
+        print(f" {display_idx}. {title}")
+        print(f"    ID: {place_id} |  Категория: {category}")
+        print(f"    Рейтинг: {rating} (всего оценок: {int(review_count)})")
         print(f"   {'─'*60}")
-        print(f"   📊 Итоговый скор: {final_score:.4f}")
-        print(f"   ├─ 🔍 Семантический скор (теги): {semantic_score:.4f}")
-        print(f"   └─ ⭐ Рейтинговый скор (Bayesian): {rating_score:.4f}")
+        print(f"    Итоговый скор: {final_score:.4f}")
+        print(f"   ├─  Семантический скор (теги): {semantic_score:.4f}")
+        print(f"   └─  Рейтинговый скор (Bayesian): {rating_score:.4f}")
         
         if show_tags:
             tags_value = row.get('atmosphere_tags', '')
@@ -503,7 +503,7 @@ def print_atmosphere_recommendations(
                 tags_str = tags_str.strip('[]').strip()
                 if len(tags_str) > 150:
                     tags_str = tags_str[:150] + "..."
-                print(f"   🏷️ Теги места: {tags_str}")
+                print(f"    Теги места: {tags_str}")
     
     print(f"\n{'='*100}")
 
@@ -532,8 +532,8 @@ def test_atmosphere_model(model_path: str, test_texts: List[str] = None):
     
     for text in test_texts:
         result = detector.predict(text)
-        print(f"\n📝 Текст: {text}")
-        print(f"   🏷️ Найдено тегов: {result['num_tags']}")
+        print(f"\n Текст: {text}")
+        print(f"    Найдено тегов: {result['num_tags']}")
         if result['tags']:
             for i, tag in enumerate(result['tags'], 1):
                 print(f"      {i}. '{tag}'")
@@ -573,4 +573,4 @@ if __name__ == "__main__":
     # Вывод результатов
     print_atmosphere_recommendations(recommendations, show_tags=True)
     
-    print("\n✅ Модуль готов к использованию!")
+    print("\n Модуль готов к использованию!")
