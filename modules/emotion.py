@@ -1,4 +1,3 @@
-# modules/emotion.py
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -19,18 +18,14 @@ class EmotionDetector:
             emotion_threshold: порог уверенности для определения эмоции (0-1)
             semantic_weight: вес семантического поиска при комбинировании с about_dict (0-1)
         """
-        print("😌 Инициализация EmotionDetector...")
+        print(" Инициализация EmotionDetector...")
         
-        # Сохраняем пороги
         self.emotion_threshold = emotion_threshold
         self.semantic_weight = semantic_weight
-        
-        # ==================== 1. МОДЕЛЬ ЭМОЦИЙ ====================
         self.tokenizer = AutoTokenizer.from_pretrained("fyaronskiy/ruRoberta-large-ru-go-emotions")
         self.model = AutoModelForSequenceClassification.from_pretrained("fyaronskiy/ruRoberta-large-ru-go-emotions")
         self.model.eval()
         
-        # ==================== 2. МОДЕЛЬ ДЛЯ СЕМАНТИЧЕСКОГО ПОИСКА ====================
         self.semantic_model = SentenceTransformer('intfloat/multilingual-e5-small')
         
         self.labels = [
@@ -41,11 +36,9 @@ class EmotionDetector:
             'relief', 'remorse', 'sadness', 'surprise', 'neutral'
         ]
         
-        # ==================== 3. ЛЕММАТИЗАТОР ====================
         self.morph = pymorphy3.MorphAnalyzer()
         self.lemmatizer_available = True
         
-        # ==================== 4. ДЕФОЛТНЫЕ СТРАТЕГИИ ДЛЯ ЭМОЦИЙ ====================
         self.default_coping_for_emotion = {
             'admiration': 'quiet', 'amusement': 'have_fun', 'approval': 'socialize',
             'caring': 'family', 'curiosity': 'explore', 'desire': 'romantic',
@@ -58,7 +51,7 @@ class EmotionDetector:
             'remorse': 'calm_down', 'sadness': 'distract', 'surprise': 'explore', 'neutral': 'any'
         }
         
-        # ==================== 5-8. ЗАГРУЗКА МАППИНГОВ ====================
+        # ЗАГРУЗКА МАППИНГОВ
         self.about_dict_mapping = self._load_about_dict_mapping()
         self.tag_keywords = self._load_tag_keywords()
         self.coping_strategies = self._load_coping_strategies()
@@ -67,9 +60,9 @@ class EmotionDetector:
         # Кэш для семантических эмбеддингов тегов мест
         self._place_embeddings_cache = {}
         
-        print(f"✅ EmotionDetector готов (порог эмоций: {self.emotion_threshold}, вес семантики: {self.semantic_weight})\n")
+        print(f" EmotionDetector готов (порог эмоций: {self.emotion_threshold}, вес семантики: {self.semantic_weight})\n")
     
-    # ==================== МЕТОДЫ _load_* ====================
+    # МЕТОДЫ _load_* 
     def _load_about_dict_mapping(self) -> Dict:
         """Прямое отображение значений из about_dict в характеристики"""
         return {
@@ -247,7 +240,7 @@ class EmotionDetector:
         
         return profiles
     
-    # ==================== ЛЕММАТИЗАЦИЯ ====================
+    # ЛЕММАТИЗАЦИЯ
     def _lemmatize_word(self, word: str) -> str:
         try:
             return self.morph.parse(word.lower().strip())[0].normal_form
@@ -258,7 +251,7 @@ class EmotionDetector:
         words = re.findall(r'\b\w+\b', text.lower())
         return [self._lemmatize_word(w) for w in words if len(w) > 2]
     
-    # ==================== ПОИСК КОПИНГ-СТРАТЕГИИ ====================
+    # ПОИСК СТРАТЕГИИ
     def _detect_coping_by_keywords(self, text: str) -> Tuple[Optional[str], float]:
         text_lemmas = set(self._lemmatize_text(text))
         scores = {}
@@ -323,7 +316,7 @@ class EmotionDetector:
         default_strategy = self.default_coping_for_emotion.get(emotion, 'any')
         return default_strategy, 0.3, 'default'
     
-    # ==================== ИЗВЛЕЧЕНИЕ ХАРАКТЕРИСТИК МЕСТА ====================
+    # ИЗВЛЕЧЕНИЕ ХАРАКТЕРИСТИК МЕСТА
     def extract_from_about_dict(self, about_dict) -> Dict:
         """Извлекает характеристики из about_dict"""
         features = {"activity_level": [], "noise_level": [], "atmosphere_type": [], "lighting": [], "crowdedness": []}
@@ -427,7 +420,7 @@ class EmotionDetector:
         
         return features, confidence
     
-    # ==================== СЕМАНТИЧЕСКИЙ ПОИСК ====================
+    # СЕМАНТИЧЕСКИЙ ПОИСК
     def semantic_search_score(self, query: str, tags_str: str) -> float:
         """Вычисляет семантическую близость между запросом и тегами места"""
         if not tags_str or not isinstance(tags_str, str) or not tags_str.strip():
@@ -443,7 +436,7 @@ class EmotionDetector:
         similarity = cosine_similarity(query_embedding, tags_embedding)[0][0]
         return float(similarity)
     
-    # ==================== РАСЧЁТ СКОРОВ ====================
+    # РАСЧЁТ СКОРОВ
     def calculate_final_score(
         self, 
         place_row, 
@@ -539,7 +532,7 @@ class EmotionDetector:
         
         return total_score / total_weight if total_weight > 0 else 0.0
     
-    # ==================== ОСНОВНОЙ МЕТОД PREDICT ====================
+    # ОСНОВНОЙ МЕТОД PREDICT
     def predict(self, text: str, emotion_threshold: Optional[float] = None) -> Union[Dict, None]:
         """Предсказание эмоции и стратегии"""
         threshold = emotion_threshold if emotion_threshold is not None else self.emotion_threshold
@@ -623,7 +616,7 @@ class EmotionDetector:
             return f"идеальное место: {', '.join(desc_parts)}"
         return "комфортное место"
     
-    # ==================== ОСНОВНОЙ МЕТОД РЕКОМЕНДАЦИЙ ====================
+    # ОСНОВНОЙ МЕТОД РЕКОМЕНДАЦИЙ
     def get_emotion_based_recommendations(
         self, 
         query: str, 
@@ -647,8 +640,7 @@ class EmotionDetector:
         emotion_result = self.predict(query)
         
         if not emotion_result:
-            print(f"⚠️ Эмоция не распознана (ниже порога {self.emotion_threshold})")
-            # Возвращаем ВСЕ места, отсортированные по рейтингу
+            print(f" Эмоция не распознана (ниже порога {self.emotion_threshold})")
             result_df = places_df.copy()
             result_df['final_score'] = result_df.apply(
                 lambda row: self.calculate_rating_score(row), axis=1
@@ -667,12 +659,12 @@ class EmotionDetector:
         
         desired_profile = emotion_result["desired_profile"]
         
-        print(f"\n😊 Распознана эмоция: {emotion_result['emotion']} "
+        print(f"\n Распознана эмоция: {emotion_result['emotion']} "
               f"(уверенность: {emotion_result['emotion_confidence']:.2f})")
-        print(f"🎯 Стратегия: {emotion_result['coping_description']}")
-        print(f"💡 {emotion_result['profile_description']}")
+        print(f" Стратегия: {emotion_result['coping_description']}")
+        print(f" {emotion_result['profile_description']}")
         
-        print(f"📊 Оценка {len(places_df)} мест...")
+        print(f" Оценка {len(places_df)} мест...")
         
         # Рассчитываем скоры для ВСЕХ мест
         scores = []
@@ -702,8 +694,6 @@ class EmotionDetector:
             return result_df.head(top_k)
         return result_df
 
-
-# ==================== ФУНКЦИЯ ДЛЯ КРАСИВОГО ВЫВОДА ====================
 def print_emotion_recommendations(recommendations_df: pd.DataFrame, top_n: int = None):
     """
     Красиво выводит рекомендации с названиями, категориями и всеми скорами
@@ -711,9 +701,7 @@ def print_emotion_recommendations(recommendations_df: pd.DataFrame, top_n: int =
     if top_n:
         recommendations_df = recommendations_df.head(top_n)
     
-    print(f"\n{'='*100}")
-    print(f"🌟 РЕКОМЕНДАЦИИ (ранжированы по рейтингу с учётом числа отзывов):")
-    print(f"{'='*100}")
+    print(f" РЕКОМЕНДАЦИИ (ранжированы по рейтингу с учётом числа отзывов):")
     
     for display_idx, (idx, row) in enumerate(recommendations_df.iterrows(), 1):
         title = row.get('title', 'Название не указано')
@@ -739,19 +727,19 @@ def print_emotion_recommendations(recommendations_df: pd.DataFrame, top_n: int =
             review_count = 0
         
         print(f"\n{'─'*100}")
-        print(f"📍 {display_idx}. {title}")
-        print(f"   🆔 ID: {place_id} | 📂 Категория: {category}")
-        print(f"   ⭐ Рейтинг: {rating} (всего оценок: {int(review_count)})")
+        print(f" {display_idx}. {title}")
+        print(f"    ID: {place_id} | 📂 Категория: {category}")
+        print(f"    Рейтинг: {rating} (всего оценок: {int(review_count)})")
         print(f"   {'─'*80}")
         
         if 'final_score' in row:
-            print(f"   📊 Итоговый скор (рейтинг+соответствие): {row['final_score']:.4f}")
+            print(f"    Итоговый скор (рейтинг+соответствие): {row['final_score']:.4f}")
         if 'rating_score' in row:
-            print(f"   ├─ ⭐ Рейтинговый скор (Bayesian): {row['rating_score']:.4f}")
+            print(f"   ├─  Рейтинговый скор (Bayesian): {row['rating_score']:.4f}")
         if 'match_score' in row:
-            print(f"   ├─ 🎯 Match скор (about_dict): {row['match_score']:.4f}")
+            print(f"   ├─  Match скор (about_dict): {row['match_score']:.4f}")
         if 'semantic_score' in row:
-            print(f"   └─ 🔍 Semantic скор (теги): {row['semantic_score']:.4f}")
+            print(f"   └─  Semantic скор (теги): {row['semantic_score']:.4f}")
         
         tags_value = row.get('all_tags_concat', '')
         if pd.isna(tags_value) or tags_value is None:
@@ -764,6 +752,6 @@ def print_emotion_recommendations(recommendations_df: pd.DataFrame, top_n: int =
         if tags_str:
             if len(tags_str) > 100:
                 tags_str = tags_str[:100] + "..."
-            print(f"   🏷️ Теги из отзывов: {tags_str}")
+            print(f"    Теги из отзывов: {tags_str}")
     
     print(f"\n{'='*100}")
