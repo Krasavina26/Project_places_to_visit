@@ -24,9 +24,6 @@
 
 ##  Архитектура проекта
 
-### Общая структура
-...
-
 ## Схемы работы модулей
 
-Ссылка на HF Spaces: [Krasavina/chatbot-for-places](https://huggingface.co/spaces/Krasavina/chatbot-for-places)
+[!img /shemas]
