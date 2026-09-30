@@ -217,10 +217,7 @@
 
 ### Примеры запросов и результатов
 
-
-
-
-
+https://github.com/user-attachments/assets/57db72cd-ba14-49e1-a194-7f4e2e8946ca
 
 ---
 
